@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block title %}{{ module_name }} - Python Tutorial{% endblock %}
+
+{% block nav %}
+<span class="nav-breadcrumb">{{ module_name }}</span>
+{% endblock %}
+
+{% block content %}
+<div class="module-header">
+    <h1>{{ module_name }}</h1>
+    <p>{{ exercises|length }} exercises</p>
+</div>
+
+<div class="exercise-list">
+    {% for exercise in exercises %}
+    <a href="{{ url_for('exercise_view', module_id=module_id, exercise_id=exercise.exercise_id) }}" class="exercise-card">
+        <span class="exercise-num">{{ exercise.exercise_num }}</span>
+        <span class="exercise-title">{{ exercise.title }}</span>
+    </a>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+
+{% block title %}{{ exercise.title }} - Python Tutorial{% endblock %}
+
+{% block nav %}
+<span class="nav-breadcrumb">
+    <a href="{{ url_for('module_view', module_id=exercise.module_id) }}">{{ exercise.module_name }}</a>
+    <span class="separator">/</span>
+    Exercise {{ exercise.exercise_num }}
+</span>
+{% endblock %}
+
+{% block content %}
+<div class="exercise-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <h3>Modules</h3>
+        {% for mod_id, mod_exercises in modules.items() %}
+        <div class="sidebar-module {% if mod_id == exercise.module_id %}active{% endif %}">
+            <a href="{{ url_for('module_view', module_id=mod_id) }}">{{ mod_exercises[0].module_name }}</a>
+        </div>
+        {% endfor %}
+    </aside>
+
+    <!-- Main content -->
+    <div class="exercise-main">
+        <div class="exercise-header">
+            <h1>Exercise {{ exercise.exercise_num }}: {{ exercise.title }}</h1>
+            <div class="nav-buttons">
+                {% if prev_exercise %}
+                <a href="{{ url_for('exercise_view', module_id=exercise.module_id, exercise_id=prev_exercise) }}" class="btn btn-nav">&larr; Previous</a>
+                {% endif %}
+                {% if next_exercise %}
+                <a href="{{ url_for('exercise_view', module_id=exercise.module_id, exercise_id=next_exercise) }}" class="btn btn-nav">Next &rarr;</a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="docstring">
+            <pre>{{ exercise.docstring }}</pre>
+        </div>
+
+        {% if exercise.setup_code %}
+        <div class="setup-code">
+            <h3>Setup Code <span class="readonly-badge">read-only</span></h3>
+            <pre><code>{{ exercise.setup_code }}</code></pre>
+        </div>
+        {% endif %}
+
+        <div class="editor-section">
+            <h3>Your Code</h3>
+            <textarea id="user-code">{{ exercise.user_code }}</textarea>
+            <div class="editor-actions">
+                <button id="run-btn" class="btn btn-primary">Run &amp; Check</button>
+                <button id="reset-btn" class="btn">Reset</button>
+            </div>
+        </div>
+
+        <div id="output-section" class="output-section hidden">
+            <h3>Output</h3>
+            <pre id="output-content"></pre>
+        </div>
+
+        <div id="result-section" class="result-section hidden">
+            <!-- Pass/Fail indicator shown here -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const editor = CodeMirror.fromTextArea(document.getElementById('user-code'), {
+        mode: 'python',
+        theme: 'dracula',
+        lineNumbers: true,
+        indentUnit: 4,
+        tabSize: 4,
+        indentWithTabs: false,
+        lineWrapping: true,
+        extraKeys: {
+            "Tab": function(cm) {
+                cm.replaceSelection("    ", "end");
+            },
+            "Ctrl-Enter": function(cm) {
+                document.getElementById('run-btn').click();
+            }
+        }
+    });
+
+    const moduleId = "{{ exercise.module_id }}";
+    const exerciseId = "{{ exercise.exercise_id }}";
+    const defaultCode = {{ exercise.user_code | tojson }};
+
+    document.getElementById('run-btn').addEventListener('click', async () => {
+        const code = editor.getValue();
+        const outputSection = document.getElementById('output-section');
+        const outputContent = document.getElementById('output-content');
+        const resultSection = document.getElementById('result-section');
+        const runBtn = document.getElementById('run-btn');
+
+        // Show loading state
+        runBtn.disabled = true;
+        runBtn.textContent = 'Running...';
+        outputSection.classList.remove('hidden');
+        outputContent.textContent = 'Executing code...';
+        resultSection.classList.add('hidden');
+
+        try {
+            const response = await fetch('/run', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({
+                    module_id: moduleId,
+                    exercise_id: exerciseId,
+                    code: code
+                })
+            });
+
+            const data = await response.json();
+
+            // Show output
+            let outputText = data.output || '';
+            if (data.error) {
+                outputText += (outputText ? '\n\n' : '') + 'Error:\n' + data.error;
+            }
+            outputContent.textContent = outputText || 'No output';
+
+            // Show result
+            resultSection.classList.remove('hidden');
+            if (data.passed) {
+                resultSection.innerHTML = `
+                    <div class="result-pass">
+                        All ${data.passed_count} check(s) passed!
+                    </div>
+                `;
+            } else {
+                let html = '<div class="result-fail">';
+                if (data.passed_count > 0 || data.failed_count > 0) {
+                    html += `${data.passed_count} passed, ${data.failed_count} failed`;
+                } else {
+                    html += 'Execution failed';
+                }
+                html += '</div>';
+                resultSection.innerHTML = html;
+            }
+        } catch (error) {
+            outputContent.textContent = 'Network error: ' + error.message;
+            resultSection.classList.remove('hidden');
+            resultSection.innerHTML = '<div class="result-fail">Request failed</div>';
+        } finally {
+            runBtn.disabled = false;
+            runBtn.textContent = 'Run & Check';
+        }
+    });
+
+    document.getElementById('reset-btn').addEventListener('click', () => {
+        editor.setValue(defaultCode);
+        document.getElementById('output-section').classList.add('hidden');
+        document.getElementById('result-section').classList.add('hidden');
+    });
+</script>
+{% endblock %}
