@@ -1,0 +1,216 @@
+// PyodideManager - handles Pyodide runtime and code execution
+
+class PyodideManager {
+  constructor() {
+    this.pyodide = null;
+    this.loadedPackages = new Set();
+    this.loading = false;
+    this.initPromise = null;
+  }
+
+  /**
+   * Initialize Pyodide runtime. Call on landing page.
+   * Returns cached instance if already initialized.
+   */
+  async init() {
+    if (this.pyodide) return this.pyodide;
+    if (this.initPromise) return this.initPromise;
+
+    this.initPromise = (async () => {
+      this.loading = true;
+
+      // loadPyodide is loaded from CDN in HTML
+      this.pyodide = await loadPyodide({
+        indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/',
+      });
+
+      // Setup stdout/stderr capture
+      await this.pyodide.runPythonAsync(`
+import sys
+from io import StringIO
+
+class OutputCapture:
+    def __init__(self):
+        self.stdout = StringIO()
+        self.stderr = StringIO()
+
+    def reset(self):
+        self.stdout = StringIO()
+        self.stderr = StringIO()
+        sys.stdout = self.stdout
+        sys.stderr = self.stderr
+
+    def get_output(self):
+        return {
+            'stdout': self.stdout.getvalue(),
+            'stderr': self.stderr.getvalue(),
+        }
+
+_capture = OutputCapture()
+sys.stdout = _capture.stdout
+sys.stderr = _capture.stderr
+      `);
+
+      this.loading = false;
+      return this.pyodide;
+    })();
+
+    return this.initPromise;
+  }
+
+  /**
+   * Load packages if not already loaded.
+   * Returns list of newly loaded packages.
+   */
+  async ensurePackages(packages, onProgress = null) {
+    await this.init();
+
+    const needed = packages.filter(p => !this.loadedPackages.has(p));
+    if (needed.length === 0) return [];
+
+    if (onProgress) onProgress({ phase: 'downloading', packages: needed });
+
+    await this.pyodide.loadPackage(needed, {
+      messageCallback: (msg) => {
+        if (onProgress) onProgress({ phase: 'loading', message: msg });
+      },
+    });
+
+    needed.forEach(p => this.loadedPackages.add(p));
+
+    if (onProgress) onProgress({ phase: 'complete', packages: needed });
+
+    return needed;
+  }
+
+  /**
+   * Execute user code safely.
+   * Returns { success, result, stdout, stderr, error }
+   */
+  async runCode(code, timeoutMs = 30000) {
+    await this.init();
+
+    // Reset output capture
+    await this.pyodide.runPythonAsync('_capture.reset()');
+
+    try {
+      // Execute user code
+      const result = await this.pyodide.runPythonAsync(code);
+
+      // Get captured output
+      const output = this.pyodide.runPython('_capture.get_output()').toJs();
+
+      return {
+        success: true,
+        result: result?.toString?.() ?? result,
+        stdout: output.get('stdout'),
+        stderr: output.get('stderr'),
+        error: null,
+      };
+    } catch (err) {
+      const output = this.pyodide.runPython('_capture.get_output()').toJs();
+
+      return {
+        success: false,
+        result: null,
+        stdout: output.get('stdout'),
+        stderr: output.get('stderr'),
+        error: this.formatError(err),
+      };
+    }
+  }
+
+  /**
+   * Run grading for an exercise.
+   * Returns { passed, message, hint, stdout }
+   */
+  async grade(setupCode, userCode, checks, hint = null) {
+    // Run setup + user code together
+    const fullCode = setupCode + '\n' + userCode;
+    const execResult = await this.runCode(fullCode);
+
+    if (!execResult.success) {
+      return {
+        passed: false,
+        message: `Code error: ${execResult.error}`,
+        hint: hint,
+        stdout: execResult.stdout,
+        passedCount: 0,
+        failedCount: 1,
+      };
+    }
+
+    // Run each check
+    let passedCount = 0;
+    let failedCount = 0;
+    let messages = [];
+
+    for (const check of checks) {
+      try {
+        await this.pyodide.runPythonAsync(check.assertion);
+        passedCount++;
+        messages.push(`[PASS] ${check.description || 'Check passed'}`);
+      } catch (err) {
+        failedCount++;
+        const errMsg = this.formatAssertionError(err);
+        messages.push(`[FAIL] ${check.description || 'Check failed'}: ${errMsg}`);
+      }
+    }
+
+    return {
+      passed: failedCount === 0 && passedCount > 0,
+      message: messages.join('\n'),
+      hint: failedCount > 0 ? hint : null,
+      stdout: execResult.stdout,
+      passedCount,
+      failedCount,
+    };
+  }
+
+  /**
+   * Get a Python variable's value.
+   */
+  getVariable(name) {
+    try {
+      const value = this.pyodide.globals.get(name);
+      return value?.toJs?.() ?? value;
+    } catch {
+      return undefined;
+    }
+  }
+
+  /**
+   * Check if packages are loaded.
+   */
+  hasPackages(packages) {
+    return packages.every(p => this.loadedPackages.has(p));
+  }
+
+  formatError(err) {
+    const msg = err.message || String(err);
+    const lines = msg.split('\n');
+
+    // Find the actual error line (skip Pyodide internals)
+    const errorIdx = lines.findIndex(l =>
+      l.includes('Error:') || l.includes('Exception:')
+    );
+
+    if (errorIdx >= 0) {
+      return lines.slice(Math.max(0, errorIdx - 2)).join('\n');
+    }
+    return msg;
+  }
+
+  formatAssertionError(err) {
+    const msg = err.message || String(err);
+
+    if (msg.includes('AssertionError')) {
+      const match = msg.match(/AssertionError:?\s*(.*)/s);
+      return match ? match[1].trim().split('\n')[0] : 'Assertion failed';
+    }
+    return msg.split('\n')[0];
+  }
+}
+
+// Singleton export
+export const pyodide = new PyodideManager();

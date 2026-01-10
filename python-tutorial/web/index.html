@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Python Tutorial for R Users</title>
+  <link rel="stylesheet" href="css/style.css">
+  <!-- CodeMirror -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+</head>
+<body>
+  <nav class="navbar">
+    <a href="#" class="nav-brand" data-nav="home">Python for R Users</a>
+    <div id="nav-breadcrumb" class="nav-breadcrumb"></div>
+    <div id="pyodide-status" class="pyodide-status">
+      <span class="status-dot"></span>
+      <span class="status-text">Loading Python...</span>
+    </div>
+  </nav>
+
+  <!-- Loading Overlay -->
+  <div id="loading-overlay" class="loading-overlay hidden">
+    <div class="loading-content">
+      <div class="spinner"></div>
+      <p id="loading-message" class="loading-message">Initializing Python...</p>
+      <div id="loading-progress" class="progress-bar">
+        <div class="progress-fill"></div>
+      </div>
+      <p class="loading-hint">
+        First load downloads packages to your browser.<br>
+        Subsequent visits will be faster.
+      </p>
+    </div>
+  </div>
+
+  <!-- Warning Modal -->
+  <div id="warning-modal" class="modal-overlay hidden">
+    <div class="modal-content">
+      <h3>Large Package</h3>
+      <p id="warning-message"></p>
+      <p class="modal-note">
+        This only happens once - packages are cached in your browser.
+      </p>
+      <div class="modal-actions">
+        <button id="warning-cancel" class="btn">Go Back</button>
+        <button id="warning-confirm" class="btn btn-primary">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="container">
+    <!-- Home View -->
+    <div id="view-home" class="view">
+      <div class="home-header">
+        <h1>Python Tutorial for R Data Scientists</h1>
+        <p class="subtitle">93 interactive exercises across 10 modules</p>
+        <div id="overall-progress" class="overall-progress"></div>
+      </div>
+      <div id="module-grid" class="module-grid"></div>
+    </div>
+
+    <!-- Module View -->
+    <div id="view-module" class="view hidden">
+      <div class="module-header">
+        <h1 id="module-title"></h1>
+        <p id="module-subtitle"></p>
+      </div>
+      <div id="exercise-list" class="exercise-list"></div>
+    </div>
+
+    <!-- Exercise View -->
+    <div id="view-exercise" class="view hidden">
+      <div class="exercise-layout">
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar"></aside>
+
+        <!-- Main content -->
+        <div class="exercise-main">
+          <div class="exercise-header">
+            <h1 id="exercise-title"></h1>
+            <div id="exercise-nav" class="nav-buttons"></div>
+          </div>
+
+          <div id="docstring" class="docstring">
+            <pre></pre>
+          </div>
+
+          <div id="setup-code-section" class="setup-code hidden">
+            <h3>Setup Code <span class="readonly-badge">read-only</span></h3>
+            <pre><code id="setup-code"></code></pre>
+          </div>
+
+          <div class="editor-section">
+            <h3>Your Code</h3>
+            <textarea id="user-code"></textarea>
+            <div class="editor-actions">
+              <button id="run-btn" class="btn btn-primary">Run &amp; Check</button>
+              <button id="reset-btn" class="btn">Reset</button>
+              <span id="auto-save-indicator" class="auto-save-indicator"></span>
+            </div>
+          </div>
+
+          <div id="output-section" class="output-section hidden">
+            <h3>Output</h3>
+            <pre id="output-content"></pre>
+          </div>
+
+          <div id="result-section" class="result-section hidden"></div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/python/python.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/pyodide/v0.24.1/full/pyodide.js"></script>
+  <script>
+    // Set base path for exercises (relative to index.html)
+    window.EXERCISES_BASE_PATH = 'exercises';
+  </script>
+  <script type="module" src="main.js"></script>
+</body>
+</html>
