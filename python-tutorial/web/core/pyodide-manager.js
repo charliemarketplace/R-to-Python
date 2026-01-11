@@ -70,11 +70,31 @@ sys.stderr = _capture.stderr
 
     if (onProgress) onProgress({ phase: 'downloading', packages: needed });
 
-    await this.pyodide.loadPackage(needed, {
-      messageCallback: (msg) => {
-        if (onProgress) onProgress({ phase: 'loading', message: msg });
-      },
-    });
+    // Packages that need micropip (not in Pyodide's built-in packages)
+    const micropipPackages = ['polars'];
+    const builtinPackages = needed.filter(p => !micropipPackages.includes(p));
+    const pipPackages = needed.filter(p => micropipPackages.includes(p));
+
+    // Load built-in packages
+    if (builtinPackages.length > 0) {
+      await this.pyodide.loadPackage(builtinPackages, {
+        messageCallback: (msg) => {
+          if (onProgress) onProgress({ phase: 'loading', message: msg });
+        },
+      });
+    }
+
+    // Load micropip packages
+    if (pipPackages.length > 0) {
+      if (onProgress) onProgress({ phase: 'loading', message: 'Loading micropip...' });
+      await this.pyodide.loadPackage('micropip');
+      const micropip = this.pyodide.pyimport('micropip');
+
+      for (const pkg of pipPackages) {
+        if (onProgress) onProgress({ phase: 'loading', message: `Installing ${pkg} via pip...` });
+        await micropip.install(pkg);
+      }
+    }
 
     needed.forEach(p => this.loadedPackages.add(p));
 
