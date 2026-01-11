@@ -444,11 +444,7 @@ async function runCode() {
     );
 
     // Show output
-    let output = result.stdout || '';
-    if (result.message) {
-      output += (output ? '\n\n' : '') + result.message;
-    }
-    outputContent.textContent = output || 'No output';
+    outputContent.textContent = result.stdout || 'No output';
 
     // Show result
     resultSection.classList.remove('hidden');
