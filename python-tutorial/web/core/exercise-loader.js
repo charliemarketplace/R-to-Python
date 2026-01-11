@@ -65,6 +65,9 @@ function parseGradingChecks(gradingCode) {
   // Strip the "if __name__" wrapper and imports since we'll handle those
   let code = gradingCode;
 
+  // Remove the grading marker comment
+  code = code.replace(/^#\s*-+\s*GRADING.*$/gm, '');
+
   // Remove the if __name__ == "__main__": wrapper
   code = code.replace(/if\s+__name__\s*==\s*["']__main__["']\s*:/g, '');
 
@@ -74,11 +77,14 @@ function parseGradingChecks(gradingCode) {
   // Dedent the remaining code (remove common leading whitespace)
   const lines = code.split('\n').filter(l => l.trim() !== '');
   if (lines.length > 0) {
-    // Find minimum indentation
-    const indents = lines.filter(l => l.trim()).map(l => l.match(/^(\s*)/)[1].length);
-    const minIndent = Math.min(...indents);
-    if (minIndent > 0) {
-      code = lines.map(l => l.slice(minIndent)).join('\n');
+    // Find minimum indentation (only consider non-comment lines)
+    const codeLines = lines.filter(l => l.trim() && !l.trim().startsWith('#'));
+    if (codeLines.length > 0) {
+      const indents = codeLines.map(l => l.match(/^(\s*)/)[1].length);
+      const minIndent = Math.min(...indents);
+      if (minIndent > 0) {
+        code = lines.map(l => l.slice(minIndent)).join('\n');
+      }
     }
   }
 
