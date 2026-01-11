@@ -21,7 +21,7 @@ class PyodideManager {
 
       // loadPyodide is loaded from CDN in HTML
       this.pyodide = await loadPyodide({
-        indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.24.1/full/',
+        indexURL: 'https://cdn.jsdelivr.net/pyodide/v0.27.0/full/',
       });
 
       // Setup stdout/stderr capture
@@ -71,7 +71,8 @@ sys.stderr = _capture.stderr
     if (onProgress) onProgress({ phase: 'downloading', packages: needed });
 
     // Packages that need micropip (not in Pyodide's built-in packages)
-    const micropipPackages = ['polars'];
+    // Note: Polars is included in Pyodide 0.27+ as a builtin
+    const micropipPackages = [];
     const builtinPackages = needed.filter(p => !micropipPackages.includes(p));
     const pipPackages = needed.filter(p => micropipPackages.includes(p));
 
