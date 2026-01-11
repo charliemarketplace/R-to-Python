@@ -439,6 +439,7 @@ async function runCode() {
     const result = await pyodide.grade(
       exerciseData.setupCode,
       userCode,
+      exerciseData.postUserCode,
       exerciseData.gradingCode,
       exerciseData.hint
     );

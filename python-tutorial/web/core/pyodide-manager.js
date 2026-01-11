@@ -124,7 +124,7 @@ sys.stderr = _capture.stderr
    * Run grading for an exercise.
    * Runs the actual grading code from the exercise file.
    */
-  async grade(setupCode, userCode, gradingCode, hint = null) {
+  async grade(setupCode, userCode, postUserCode, gradingCode, hint = null) {
     // Simple check function - just equality comparison
     const checkFunction = `
 def check(got, expected, hint=None, rtol=1e-6):
@@ -152,8 +152,8 @@ def check_exists(obj, hint=None):
     return False
 `;
 
-    // Run setup + user code + grading code together
-    const fullCode = checkFunction + '\n' + setupCode + '\n' + userCode + '\n' + gradingCode;
+    // Run setup + user code + post-user code + grading code together
+    const fullCode = checkFunction + '\n' + setupCode + '\n' + userCode + '\n' + (postUserCode || '') + '\n' + gradingCode;
     const result = await this.runCode(fullCode);
 
     // Count passes and failures from output

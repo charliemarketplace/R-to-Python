@@ -25,6 +25,7 @@ function parseExerciseFile(content, moduleId, exerciseNum) {
 
   let setupCode = '';
   let starterCode = '';
+  let postUserCode = '';
   let gradingCode = '';
 
   if (startIdx !== -1 && endIdx !== -1) {
@@ -33,7 +34,9 @@ function parseExerciseFile(content, moduleId, exerciseNum) {
     setupCode = content.substring(docEnd, startIdx).trim();
     starterCode = content.substring(startIdx + userStartMarker.length, endIdx).trim();
 
+    // Code between END YOUR CODE and GRADING (runs after user code)
     if (gradingIdx !== -1) {
+      postUserCode = content.substring(endIdx + userEndMarker.length, gradingIdx).trim();
       gradingCode = content.substring(gradingIdx);
     }
   }
@@ -52,6 +55,7 @@ function parseExerciseFile(content, moduleId, exerciseNum) {
     docstring,
     setupCode,
     starterCode,
+    postUserCode,
     gradingCode: cleanGradingCode,
     hint,
   };
