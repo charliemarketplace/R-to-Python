@@ -10,8 +10,8 @@ export const modules = {
     exercises: 8,
   },
 
-  '02_control_flow': {
-    title: 'Control Flow & Loops',
+  '02_data_structures': {
+    title: 'Data Structures',
     packages: [],
     loadTimeFlag: 'fast',
     estimatedLoadMs: 0,
@@ -19,22 +19,22 @@ export const modules = {
     exercises: 10,
   },
 
-  '03_functions': {
+  '03_control_flow': {
+    title: 'Control Flow & Loops',
+    packages: [],
+    loadTimeFlag: 'fast',
+    estimatedLoadMs: 0,
+    preloadAfter: '02_data_structures',
+    exercises: 10,
+  },
+
+  '04_functions': {
     title: 'Functions & Scope',
     packages: [],
     loadTimeFlag: 'fast',
     estimatedLoadMs: 0,
-    preloadAfter: '02_control_flow',
+    preloadAfter: '03_control_flow',
     exercises: 8,
-  },
-
-  '04_data_structures': {
-    title: 'Data Structures',
-    packages: [],
-    loadTimeFlag: 'fast',
-    estimatedLoadMs: 0,
-    preloadAfter: '03_functions',
-    exercises: 10,
   },
 
   '05_numpy': {
@@ -42,7 +42,7 @@ export const modules = {
     packages: ['numpy'],
     loadTimeFlag: 'medium',
     estimatedLoadMs: 2500,
-    preloadAfter: '04_data_structures',
+    preloadAfter: '04_functions',
     exercises: 10,
   },
 

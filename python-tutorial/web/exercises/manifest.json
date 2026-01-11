@@ -9,7 +9,19 @@
     "7": "ex07_fstrings.py",
     "8": "ex08_mutable_default.py"
   },
-  "02_control_flow": {
+  "02_data_structures": {
+    "1": "ex01_lists.py",
+    "2": "ex02_tuples.py",
+    "3": "ex03_dicts_basics.py",
+    "4": "ex04_dict_methods.py",
+    "5": "ex05_sets.py",
+    "6": "ex06_list_of_dicts.py",
+    "7": "ex07_dict_of_lists.py",
+    "8": "ex08_nested_dicts.py",
+    "9": "ex09_safe_nested_access.py",
+    "10": "ex10_deep_copy.py"
+  },
+  "03_control_flow": {
     "1": "ex01_for_loops.py",
     "2": "ex02_range.py",
     "3": "ex03_enumerate.py",
@@ -21,7 +33,7 @@
     "9": "ex09_try_except.py",
     "10": "ex10_closure_trap.py"
   },
-  "03_functions": {
+  "04_functions": {
     "1": "ex01_basic_functions.py",
     "2": "ex02_keyword_args.py",
     "3": "ex03_default_args.py",
@@ -30,18 +42,6 @@
     "6": "ex06_kwargs.py",
     "7": "ex07_scope.py",
     "8": "ex08_lambda.py"
-  },
-  "04_data_structures": {
-    "1": "ex01_lists.py",
-    "2": "ex02_tuples.py",
-    "3": "ex03_dicts_basics.py",
-    "4": "ex04_dict_methods.py",
-    "5": "ex05_sets.py",
-    "6": "ex06_list_of_dicts.py",
-    "7": "ex07_dict_of_lists.py",
-    "8": "ex08_nested_dicts.py",
-    "9": "ex09_safe_nested_access.py",
-    "10": "ex10_deep_copy.py"
   },
   "05_numpy": {
     "1": "ex01_array_creation.py",
