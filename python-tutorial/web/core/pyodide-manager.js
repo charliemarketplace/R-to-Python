@@ -122,46 +122,132 @@ sys.stderr = _capture.stderr
 
   /**
    * Run grading for an exercise.
-   * Returns { passed, message, hint, stdout }
+   * Runs the actual grading code from the exercise file.
    */
-  async grade(setupCode, userCode, checks, hint = null) {
-    // Run setup + user code together
-    const fullCode = setupCode + '\n' + userCode;
-    const execResult = await this.runCode(fullCode);
+  async grade(setupCode, userCode, gradingCode, hint = null) {
+    // Define a simple check() function that mimics the grader
+    const checkFunction = `
+import numpy as np
 
-    if (!execResult.success) {
+def check(got, expected, hint=None, rtol=1e-6):
+    """Simple check function for grading."""
+    try:
+        # Handle None
+        if expected is None and got is None:
+            print("[PASS] Correct!")
+            return True
+        if expected is None or got is None:
+            print(f"[FAIL] Expected {expected!r}, got {got!r}")
+            return False
+
+        # NumPy arrays
+        if isinstance(expected, np.ndarray):
+            if not isinstance(got, np.ndarray):
+                print(f"[FAIL] Expected numpy array, got {type(got).__name__}")
+                return False
+            np.testing.assert_allclose(got, expected, rtol=rtol)
+            print("[PASS] Correct!")
+            return True
+
+        # Lists - compare element by element
+        if isinstance(expected, list):
+            if got != expected:
+                print(f"[FAIL] Expected {expected!r}, got {got!r}")
+                return False
+            print("[PASS] Correct!")
+            return True
+
+        # Floats with tolerance
+        if isinstance(expected, float):
+            if abs(got - expected) > rtol * max(abs(expected), 1):
+                print(f"[FAIL] Expected ~{expected}, got {got}")
+                return False
+            print("[PASS] Correct!")
+            return True
+
+        # Default equality
+        if got != expected:
+            print(f"[FAIL] Expected {expected!r}, got {got!r}")
+            return False
+        print("[PASS] Correct!")
+        return True
+
+    except AssertionError as e:
+        print(f"[FAIL] {e}")
+        return False
+    except Exception as e:
+        print(f"[FAIL] Error: {e}")
+        return False
+
+def check_type(got, expected_type, hint=None):
+    if isinstance(got, expected_type):
+        print(f"[PASS] Correct type: {type(got).__name__}")
+        return True
+    print(f"[FAIL] Expected {expected_type}, got {type(got).__name__}")
+    return False
+
+def check_plot(fig, check_type="scatter", hint=None):
+    try:
+        if fig is None:
+            print("[FAIL] Figure is None")
+            return False
+        if not hasattr(fig, 'data') or len(fig.data) == 0:
+            print("[FAIL] Figure has no data")
+            return False
+        types = [t.type for t in fig.data]
+        if check_type.lower() in [t.lower() for t in types]:
+            print(f"[PASS] Plot looks good! Found {len(fig.data)} trace(s)")
+            return True
+        print(f"[FAIL] Expected '{check_type}' trace, found: {types}")
+        return False
+    except Exception as e:
+        print(f"[FAIL] {e}")
+        return False
+
+def check_model(model, param, expected, rtol=0.1):
+    try:
+        if not hasattr(model, 'params'):
+            print("[FAIL] Not a statsmodels result object")
+            return False
+        if param not in model.params:
+            print(f"[FAIL] Parameter '{param}' not found")
+            return False
+        actual = model.params[param]
+        if abs(actual - expected) / max(abs(expected), 1e-10) > rtol:
+            print(f"[FAIL] Coefficient '{param}': expected ~{expected:.4f}, got {actual:.4f}")
+            return False
+        print(f"[PASS] Coefficient '{param}' correct: {actual:.4f}")
+        return True
+    except Exception as e:
+        print(f"[FAIL] {e}")
+        return False
+`;
+
+    // Run setup + user code + grading code together
+    const fullCode = checkFunction + '\n' + setupCode + '\n' + userCode + '\n' + gradingCode;
+    const result = await this.runCode(fullCode);
+
+    // Count passes and failures from output
+    const passedCount = (result.stdout.match(/\[PASS\]/g) || []).length;
+    const failedCount = (result.stdout.match(/\[FAIL\]/g) || []).length;
+
+    // Check for code errors
+    if (!result.success && passedCount === 0 && failedCount === 0) {
       return {
         passed: false,
-        message: `Code error: ${execResult.error}`,
+        message: result.error,
         hint: hint,
-        stdout: execResult.stdout,
+        stdout: result.stdout,
         passedCount: 0,
         failedCount: 1,
       };
     }
 
-    // Run each check
-    let passedCount = 0;
-    let failedCount = 0;
-    let messages = [];
-
-    for (const check of checks) {
-      try {
-        await this.pyodide.runPythonAsync(check.assertion);
-        passedCount++;
-        messages.push(`[PASS] ${check.description || 'Check passed'}`);
-      } catch (err) {
-        failedCount++;
-        const errMsg = this.formatAssertionError(err);
-        messages.push(`[FAIL] ${check.description || 'Check failed'}: ${errMsg}`);
-      }
-    }
-
     return {
       passed: failedCount === 0 && passedCount > 0,
-      message: messages.join('\n'),
+      message: result.stdout,
       hint: failedCount > 0 ? hint : null,
-      stdout: execResult.stdout,
+      stdout: result.stdout,
       passedCount,
       failedCount,
     };

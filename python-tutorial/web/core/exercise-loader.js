@@ -38,8 +38,8 @@ function parseExerciseFile(content, moduleId, exerciseNum) {
     }
   }
 
-  // Parse checks from grading code
-  const checks = parseGradingChecks(gradingCode);
+  // Clean up grading code for execution
+  const cleanGradingCode = parseGradingChecks(gradingCode);
 
   // Extract hint from check calls
   const hintMatch = gradingCode.match(/hint=['"](.*?)['"]/);
@@ -52,98 +52,37 @@ function parseExerciseFile(content, moduleId, exerciseNum) {
     docstring,
     setupCode,
     starterCode,
-    checks,
+    gradingCode: cleanGradingCode,
     hint,
   };
 }
 
 /**
- * Parse grading code to extract check assertions.
+ * Extract grading code - we'll run it directly in Python instead of parsing
  */
 function parseGradingChecks(gradingCode) {
-  const checks = [];
+  // Just return the raw grading code - we'll run the actual check() function
+  // Strip the "if __name__" wrapper and imports since we'll handle those
+  let code = gradingCode;
 
-  // Match check() calls - extract variable being checked and expected value
-  const checkPattern = /check\s*\(\s*([^,]+),\s*expected\s*=\s*([^,)]+)/g;
-  let match;
+  // Remove the if __name__ == "__main__": wrapper
+  code = code.replace(/if\s+__name__\s*==\s*["']__main__["']\s*:/g, '');
 
-  while ((match = checkPattern.exec(gradingCode)) !== null) {
-    const varName = match[1].trim();
-    const expected = match[2].trim();
+  // Remove the grader import - we'll define check() ourselves
+  code = code.replace(/from\s+grader\.check\s+import\s+\w+/g, '');
 
-    checks.push({
-      description: `Check ${varName}`,
-      assertion: `
-import numpy as np
-_got = ${varName}
-_expected = ${expected}
-
-# Handle numpy arrays
-if isinstance(_expected, np.ndarray):
-    assert isinstance(_got, np.ndarray), f"Expected numpy array, got {type(_got).__name__}"
-    np.testing.assert_allclose(_got, _expected, rtol=1e-6)
-# Handle floats
-elif isinstance(_expected, float):
-    assert abs(_got - _expected) < 1e-6, f"Expected {_expected}, got {_got}"
-# Handle lists with floats
-elif isinstance(_expected, list) and len(_expected) > 0 and isinstance(_expected[0], float):
-    for i, (g, e) in enumerate(zip(_got, _expected)):
-        assert abs(g - e) < 1e-6, f"Element {i}: expected {e}, got {g}"
-# Default comparison
-else:
-    assert _got == _expected, f"Expected {_expected!r}, got {_got!r}"
-`,
-    });
+  // Dedent the remaining code (remove common leading whitespace)
+  const lines = code.split('\n').filter(l => l.trim() !== '');
+  if (lines.length > 0) {
+    // Find minimum indentation
+    const indents = lines.filter(l => l.trim()).map(l => l.match(/^(\s*)/)[1].length);
+    const minIndent = Math.min(...indents);
+    if (minIndent > 0) {
+      code = lines.map(l => l.slice(minIndent)).join('\n');
+    }
   }
 
-  // Match check_model() calls
-  const modelPattern = /check_model\s*\(\s*([^,]+),\s*['"](.*?)['"],\s*expected\s*=\s*([^,)]+)/g;
-  while ((match = modelPattern.exec(gradingCode)) !== null) {
-    const modelVar = match[1].trim();
-    const param = match[2];
-    const expected = match[3].trim();
-
-    checks.push({
-      description: `Check model coefficient '${param}'`,
-      assertion: `
-_model = ${modelVar}
-assert hasattr(_model, 'params'), "Not a statsmodels result object"
-assert '${param}' in _model.params, f"Parameter '${param}' not found"
-_actual = _model.params['${param}']
-_expected = ${expected}
-assert abs(_actual - _expected) / abs(_expected) < 0.1, f"Coefficient '${param}': expected ~{_expected:.4f}, got {_actual:.4f}"
-`,
-    });
-  }
-
-  // Match check_plot() calls
-  const plotPattern = /check_plot\s*\(\s*([^,]+),\s*['"](.*?)['"]/g;
-  while ((match = plotPattern.exec(gradingCode)) !== null) {
-    const figVar = match[1].trim();
-    const plotType = match[2];
-
-    checks.push({
-      description: `Check plot type is '${plotType}'`,
-      assertion: `
-_fig = ${figVar}
-assert _fig is not None, "Figure not created"
-assert hasattr(_fig, 'data'), "Not a valid plotly figure"
-assert len(_fig.data) > 0, "Figure has no data"
-_types = [t.type for t in _fig.data]
-assert '${plotType}' in [t.lower() for t in _types], f"Expected '${plotType}' trace, found: {_types}"
-`,
-    });
-  }
-
-  // If no checks found, create a basic one
-  if (checks.length === 0) {
-    checks.push({
-      description: 'Basic check',
-      assertion: 'assert True  # No specific checks defined',
-    });
-  }
-
-  return checks;
+  return code.trim();
 }
 
 /**
