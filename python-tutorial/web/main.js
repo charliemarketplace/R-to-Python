@@ -136,7 +136,6 @@ function showView(view) {
 
 // Render home page
 function renderHome() {
-  showView('home');
 
   // Render overall progress
   const stats = progress.getStats();
@@ -384,7 +383,7 @@ function initEditor(exercise) {
   // Create new editor
   editor = CodeMirror.fromTextArea(textarea, {
     mode: 'python',
-    theme: 'dracula',
+    theme: 'xq-light',
     lineNumbers: true,
     indentUnit: 4,
     tabSize: 4,

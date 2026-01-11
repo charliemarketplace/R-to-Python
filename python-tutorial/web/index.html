@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="css/style.css">
   <!-- CodeMirror -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/xq-light.min.css">
 </head>
 <body>
   <nav class="navbar">
@@ -55,6 +55,12 @@
       <div class="home-header">
         <h1>Python Tutorial for R Data Scientists</h1>
         <p class="subtitle">93 interactive exercises across 10 modules</p>
+        <div class="tech-note">
+          <strong>How it works:</strong> Python runs directly in your browser via
+          <a href="https://pyodide.org" target="_blank">Pyodide</a> (CPython compiled to WebAssembly).
+          Your progress and code are saved to <strong>localStorage</strong> - no account needed,
+          but stays on this device/browser only.
+        </div>
         <div id="overall-progress" class="overall-progress"></div>
       </div>
       <div id="module-grid" class="module-grid"></div>

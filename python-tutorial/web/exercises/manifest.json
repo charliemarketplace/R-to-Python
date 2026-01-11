@@ -1,0 +1,115 @@
+{
+  "01_fundamentals": {
+    "1": "ex01_indexing.py",
+    "2": "ex02_negative_indexing.py",
+    "3": "ex03_slicing_basics.py",
+    "4": "ex04_slice_step.py",
+    "5": "ex05_reference_vs_copy.py",
+    "6": "ex06_truthiness.py",
+    "7": "ex07_fstrings.py",
+    "8": "ex08_mutable_default.py"
+  },
+  "02_control_flow": {
+    "1": "ex01_for_loops.py",
+    "2": "ex02_range.py",
+    "3": "ex03_enumerate.py",
+    "4": "ex04_zip.py",
+    "5": "ex05_while_loops.py",
+    "6": "ex06_list_comprehension.py",
+    "7": "ex07_dict_comprehension.py",
+    "8": "ex08_conditional_expression.py",
+    "9": "ex09_try_except.py",
+    "10": "ex10_closure_trap.py"
+  },
+  "03_functions": {
+    "1": "ex01_basic_functions.py",
+    "2": "ex02_keyword_args.py",
+    "3": "ex03_default_args.py",
+    "4": "ex04_multiple_returns.py",
+    "5": "ex05_args.py",
+    "6": "ex06_kwargs.py",
+    "7": "ex07_scope.py",
+    "8": "ex08_lambda.py"
+  },
+  "04_data_structures": {
+    "1": "ex01_lists.py",
+    "2": "ex02_tuples.py",
+    "3": "ex03_dicts_basics.py",
+    "4": "ex04_dict_methods.py",
+    "5": "ex05_sets.py",
+    "6": "ex06_list_of_dicts.py",
+    "7": "ex07_dict_of_lists.py",
+    "8": "ex08_nested_dicts.py",
+    "9": "ex09_safe_nested_access.py",
+    "10": "ex10_deep_copy.py"
+  },
+  "05_numpy": {
+    "1": "ex01_array_creation.py",
+    "2": "ex02_indexing.py",
+    "3": "ex03_boolean_indexing.py",
+    "4": "ex04_reshape.py",
+    "5": "ex05_broadcasting_basics.py",
+    "6": "ex06_broadcasting_gotcha.py",
+    "7": "ex07_aggregations.py",
+    "8": "ex08_vectorized_ops.py",
+    "9": "ex09_views_vs_copies.py",
+    "10": "ex10_practical.py"
+  },
+  "06_pandas": {
+    "1": "ex01_dataframe_creation.py",
+    "2": "ex02_selecting_columns.py",
+    "3": "ex03_filtering_rows.py",
+    "4": "ex04_loc_iloc.py",
+    "5": "ex05_adding_columns.py",
+    "6": "ex06_groupby.py",
+    "7": "ex07_sorting.py",
+    "8": "ex08_missing_values.py",
+    "9": "ex09_merging.py",
+    "10": "ex10_melt.py",
+    "11": "ex11_pivot.py",
+    "12": "ex12_settingwithcopy.py"
+  },
+  "07_polars": {
+    "1": "ex01_dataframe_creation.py",
+    "2": "ex02_selecting.py",
+    "3": "ex03_filtering.py",
+    "4": "ex04_with_columns.py",
+    "5": "ex05_expressions.py",
+    "6": "ex06_groupby.py",
+    "7": "ex07_sorting.py",
+    "8": "ex08_nulls.py",
+    "9": "ex09_lazy.py",
+    "10": "ex10_pandas_conversion.py"
+  },
+  "08_stats": {
+    "1": "ex01_linear_regression.py",
+    "2": "ex02_model_results.py",
+    "3": "ex03_intercept_trap.py",
+    "4": "ex04_categorical.py",
+    "5": "ex05_logistic.py",
+    "6": "ex06_ttest.py",
+    "7": "ex07_correlation.py",
+    "8": "ex08_chi_squared.py",
+    "9": "ex09_distributions.py",
+    "10": "ex10_practical.py"
+  },
+  "09_plotly": {
+    "1": "ex01_scatter.py",
+    "2": "ex02_line.py",
+    "3": "ex03_bar.py",
+    "4": "ex04_histogram.py",
+    "5": "ex05_box.py",
+    "6": "ex06_facets.py",
+    "7": "ex07_layout.py",
+    "8": "ex08_graph_objects.py"
+  },
+  "10_capstone": {
+    "1": "ex01_load_explore.py",
+    "2": "ex02_cleaning.py",
+    "3": "ex03_transform.py",
+    "4": "ex04_grouped_analysis.py",
+    "5": "ex05_modeling.py",
+    "6": "ex06_visualization.py",
+    "7": "ex07_export.py"
+  }
+}
