@@ -11,6 +11,7 @@ let currentView = 'home';
 let currentModule = null;
 let currentExercise = null;
 let editor = null;
+let scratchpadEditor = null;
 let exerciseData = null;
 
 // DOM Elements
@@ -334,6 +335,17 @@ async function showExercise(moduleId, exerciseNum, pushState = true) {
   // Initialize editor
   initEditor(exerciseData);
 
+  // Initialize scratchpad (reset state for new exercise)
+  const scratchpadSection = document.getElementById('scratchpad-section');
+  const scratchpadBody = document.getElementById('scratchpad-body');
+  scratchpadSection.classList.remove('open');
+  scratchpadBody.classList.add('hidden');
+  if (scratchpadEditor) {
+    scratchpadEditor.setValue('# Try your code here\n');
+  }
+  document.getElementById('scratchpad-output').textContent = '';
+  initScratchpad();
+
   // Hide output/result sections
   document.getElementById('output-section').classList.add('hidden');
   document.getElementById('result-section').classList.add('hidden');
@@ -475,6 +487,78 @@ async function runCode() {
   } finally {
     runBtn.disabled = false;
     runBtn.textContent = 'Run & Check';
+  }
+}
+
+// Scratchpad functionality
+let scratchpadInitialized = false;
+
+function initScratchpad() {
+  if (scratchpadInitialized) return;
+  scratchpadInitialized = true;
+
+  const toggle = document.getElementById('scratchpad-toggle');
+  const body = document.getElementById('scratchpad-body');
+  const section = document.getElementById('scratchpad-section');
+  const textarea = document.getElementById('scratchpad-code');
+
+  // Toggle expand/collapse
+  toggle.addEventListener('click', () => {
+    const isOpen = section.classList.toggle('open');
+    body.classList.toggle('hidden', !isOpen);
+
+    // Initialize CodeMirror on first open
+    if (isOpen && !scratchpadEditor) {
+      scratchpadEditor = CodeMirror.fromTextArea(textarea, {
+        mode: 'python',
+        theme: 'xq-light',
+        lineNumbers: true,
+        indentUnit: 4,
+        tabSize: 4,
+        indentWithTabs: false,
+        lineWrapping: true,
+        extraKeys: {
+          'Tab': (cm) => cm.replaceSelection('    ', 'end'),
+          'Ctrl-Enter': () => runScratchpad(),
+          'Cmd-Enter': () => runScratchpad(),
+        }
+      });
+      scratchpadEditor.setValue('# Try your code here\n');
+    }
+  });
+
+  // Run button
+  document.getElementById('scratchpad-run').addEventListener('click', runScratchpad);
+
+  // Clear button
+  document.getElementById('scratchpad-clear').addEventListener('click', () => {
+    if (scratchpadEditor) {
+      scratchpadEditor.setValue('');
+    }
+    document.getElementById('scratchpad-output').textContent = '';
+  });
+}
+
+async function runScratchpad() {
+  if (!scratchpadEditor) return;
+
+  const output = document.getElementById('scratchpad-output');
+  const code = scratchpadEditor.getValue();
+
+  output.textContent = 'Running...';
+
+  try {
+    const result = await pyodide.runCode(code);
+    let text = '';
+    if (result.stdout) text += result.stdout;
+    if (result.stderr) text += (text ? '\n' : '') + result.stderr;
+    if (result.error) text += (text ? '\n' : '') + 'Error: ' + result.error;
+    if (result.result && result.result !== 'None' && result.result !== 'undefined') {
+      text += (text ? '\n=> ' : '=> ') + result.result;
+    }
+    output.textContent = text || 'No output';
+  } catch (err) {
+    output.textContent = 'Error: ' + err.message;
   }
 }
 
