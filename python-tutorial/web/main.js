@@ -340,9 +340,15 @@ async function showExercise(moduleId, exerciseNum, pushState = true) {
   const scratchpadBody = document.getElementById('scratchpad-body');
   scratchpadSection.classList.remove('open');
   scratchpadBody.classList.add('hidden');
+
+  // Pre-populate scratchpad with setup code
+  const scratchpadDefault = exerciseData.setupCode
+    ? `# Setup code (same as exercise)\n${exerciseData.setupCode}\n\n# Try your code here\n`
+    : '# Try your code here\n';
   if (scratchpadEditor) {
-    scratchpadEditor.setValue('# Try your code here\n');
+    scratchpadEditor.setValue(scratchpadDefault);
   }
+  window.currentScratchpadDefault = scratchpadDefault; // Store for lazy init
   document.getElementById('scratchpad-output').textContent = '';
   initScratchpad();
 
@@ -523,7 +529,7 @@ function initScratchpad() {
           'Cmd-Enter': () => runScratchpad(),
         }
       });
-      scratchpadEditor.setValue('# Try your code here\n');
+      scratchpadEditor.setValue(window.currentScratchpadDefault || '# Try your code here\n');
     }
   });
 
