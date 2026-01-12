@@ -345,10 +345,14 @@ async function showExercise(moduleId, exerciseNum, pushState = true) {
   const scratchpadDefault = exerciseData.setupCode
     ? `# Setup code (same as exercise)\n${exerciseData.setupCode}\n\n# Try your code here\n`
     : '# Try your code here\n';
+  window.currentScratchpadDefault = scratchpadDefault; // Store for lazy init
+
+  // Reset scratchpad editor content
   if (scratchpadEditor) {
     scratchpadEditor.setValue(scratchpadDefault);
+    // Refresh after a tick to handle hidden state
+    setTimeout(() => scratchpadEditor.refresh(), 10);
   }
-  window.currentScratchpadDefault = scratchpadDefault; // Store for lazy init
   document.getElementById('scratchpad-output').textContent = '';
   initScratchpad();
 
@@ -530,6 +534,11 @@ function initScratchpad() {
         }
       });
       scratchpadEditor.setValue(window.currentScratchpadDefault || '# Try your code here\n');
+    }
+
+    // Refresh when opening (content may have been set while hidden)
+    if (isOpen && scratchpadEditor) {
+      setTimeout(() => scratchpadEditor.refresh(), 10);
     }
   });
 
