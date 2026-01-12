@@ -370,18 +370,22 @@ async function showExercise(moduleId, exerciseNum, pushState = true) {
 }
 
 // Render sidebar with exercises in current module
-function renderSidebar(activeModuleId, activeExerciseNum) {
+async function renderSidebar(activeModuleId, activeExerciseNum) {
   const moduleInfo = moduleLoader.getModuleInfo(activeModuleId);
   const moduleProgress = progress.getModule(activeModuleId);
 
+  // Load all exercise titles
   const exerciseItems = [];
   for (let i = 1; i <= moduleInfo.exercises; i++) {
+    const exercise = await loadExercise(activeModuleId, i);
+    const title = exercise?.title || `Exercise ${i}`;
     const isActive = i === activeExerciseNum;
     const isCompleted = moduleProgress.completed?.includes(i);
     exerciseItems.push(`
       <div class="sidebar-exercise ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}">
         <a data-exercise="${i}">
-          <span class="ex-num">${i}</span>
+          <span class="ex-num">${i}.</span>
+          <span class="ex-title">${title}</span>
           ${isCompleted ? '<span class="ex-check">&#10003;</span>' : ''}
         </a>
       </div>
