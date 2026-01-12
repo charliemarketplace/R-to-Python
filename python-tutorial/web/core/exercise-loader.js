@@ -76,7 +76,7 @@ function parseGradingChecks(gradingCode) {
   code = code.replace(/if\s+__name__\s*==\s*["']__main__["']\s*:/g, '');
 
   // Remove the grader import - we'll define check() ourselves
-  code = code.replace(/from\s+grader\.check\s+import\s+\w+/g, '');
+  code = code.replace(/from\s+grader\.check\s+import\s+.+/g, '');
 
   // Dedent the remaining code (remove common leading whitespace)
   const lines = code.split('\n').filter(l => l.trim() !== '');
