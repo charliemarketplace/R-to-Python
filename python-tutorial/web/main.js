@@ -330,7 +330,7 @@ async function showExercise(moduleId, exerciseNum, pushState = true) {
   }
 
   // Render sidebar
-  renderSidebar(moduleId);
+  renderSidebar(moduleId, exerciseNum);
 
   // Initialize editor
   initEditor(exerciseData);
@@ -369,22 +369,45 @@ async function showExercise(moduleId, exerciseNum, pushState = true) {
   }
 }
 
-// Render sidebar with all modules
-function renderSidebar(activeModuleId) {
-  const modulesInfo = moduleLoader.getAllModulesInfo();
+// Render sidebar with exercises in current module
+function renderSidebar(activeModuleId, activeExerciseNum) {
+  const moduleInfo = moduleLoader.getModuleInfo(activeModuleId);
+  const moduleProgress = progress.getModule(activeModuleId);
+
+  const exerciseItems = [];
+  for (let i = 1; i <= moduleInfo.exercises; i++) {
+    const isActive = i === activeExerciseNum;
+    const isCompleted = moduleProgress.completed?.includes(i);
+    exerciseItems.push(`
+      <div class="sidebar-exercise ${isActive ? 'active' : ''} ${isCompleted ? 'completed' : ''}">
+        <a data-exercise="${i}">
+          <span class="ex-num">${i}</span>
+          ${isCompleted ? '<span class="ex-check">&#10003;</span>' : ''}
+        </a>
+      </div>
+    `);
+  }
 
   elements.sidebar.innerHTML = `
-    <h3>Modules</h3>
-    ${modulesInfo.map(mod => `
-      <div class="sidebar-module ${mod.id === activeModuleId ? 'active' : ''}">
-        <a data-module="${mod.id}">${mod.title}</a>
-      </div>
-    `).join('')}
+    <div class="sidebar-back">
+      <a data-nav="modules">&larr; All Modules</a>
+    </div>
+    <h3>${moduleInfo.title}</h3>
+    <div class="sidebar-exercises">
+      ${exerciseItems.join('')}
+    </div>
   `;
 
-  elements.sidebar.querySelectorAll('[data-module]').forEach(link => {
+  // Back to modules link
+  elements.sidebar.querySelector('[data-nav="modules"]').addEventListener('click', () => {
+    navigateTo('module', { moduleId: activeModuleId });
+  });
+
+  // Exercise links
+  elements.sidebar.querySelectorAll('[data-exercise]').forEach(link => {
     link.addEventListener('click', () => {
-      navigateTo('module', { moduleId: link.dataset.module });
+      const exerciseNum = parseInt(link.dataset.exercise);
+      navigateTo('exercise', { moduleId: activeModuleId, exerciseNum });
     });
   });
 }

@@ -512,6 +512,79 @@ body {
   color: white;
 }
 
+/* Sidebar back link */
+.sidebar-back {
+  margin-bottom: 0.5rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--win95-dark);
+}
+
+.sidebar-back a {
+  color: var(--win95-blue);
+  text-decoration: none;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.sidebar-back a:hover {
+  text-decoration: underline;
+}
+
+/* Sidebar exercises */
+.sidebar-exercises {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.25rem;
+}
+
+.sidebar-exercise a {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  aspect-ratio: 1;
+  background: var(--win95-bg);
+  border: 2px solid;
+  border-color: var(--win95-white) var(--win95-dark) var(--win95-dark) var(--win95-white);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: var(--win95-text);
+  text-decoration: none;
+  position: relative;
+}
+
+.sidebar-exercise a:hover {
+  background: var(--win95-light-blue);
+}
+
+.sidebar-exercise.active a {
+  background: var(--win95-blue);
+  color: white;
+  border-color: #0000cc #000066 #000066 #0000cc;
+}
+
+.sidebar-exercise.completed a {
+  background: #ccffcc;
+  border-color: #009900 #006600 #006600 #009900;
+}
+
+.sidebar-exercise.completed.active a {
+  background: var(--win95-blue);
+}
+
+.sidebar-exercise .ex-check {
+  position: absolute;
+  top: 1px;
+  right: 2px;
+  font-size: 0.6rem;
+  color: var(--success);
+}
+
+.sidebar-exercise.active .ex-check {
+  color: white;
+}
+
 /* Exercise main content */
 .exercise-main {
   min-width: 0;
