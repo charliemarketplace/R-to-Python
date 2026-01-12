@@ -545,10 +545,10 @@ function initScratchpad() {
   // Run button
   document.getElementById('scratchpad-run').addEventListener('click', runScratchpad);
 
-  // Clear button
+  // Reset button - restore to default (setup code)
   document.getElementById('scratchpad-clear').addEventListener('click', () => {
     if (scratchpadEditor) {
-      scratchpadEditor.setValue('');
+      scratchpadEditor.setValue(window.currentScratchpadDefault || '# Try your code here\n');
     }
     document.getElementById('scratchpad-output').textContent = '';
   });
